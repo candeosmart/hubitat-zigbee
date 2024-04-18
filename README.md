@@ -1,1 +1,1 @@
-Hubitat Device Drivers for Candeo Branded Zigbee Devices
+Hubitat Device Drivers for Candeo Zigbee Devices
