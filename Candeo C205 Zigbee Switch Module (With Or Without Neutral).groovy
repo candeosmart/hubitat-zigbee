@@ -35,7 +35,7 @@ metadata {
 import groovy.transform.Field
 
 private @Field final String CANDEO = 'Candeo C205 Device Driver'
-private @Field final Boolean DEBUG = true
+private @Field final Boolean DEBUG = false
 private @Field final Integer LOGSOFF = 1800
 private @Field final Map PREFFALSE = [value: 'false', type: 'bool']
 private @Field final Map PREFTRUE = [value: 'true', type: 'bool']
