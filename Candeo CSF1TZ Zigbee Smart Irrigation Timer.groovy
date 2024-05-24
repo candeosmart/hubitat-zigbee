@@ -11,7 +11,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo CSF1TZ Zigbee Smart Irrigation Timer', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/main/Candeo%20CSF1TZ%20Zigbee%20Smart%20Irrigation%20Timer.groovy?token=GHSAT0AAAAAACQRL7LYYDSLRMUIEJLKH6MQZSQPFRA', singleThreaded: true) {
+    definition(name: 'Candeo CSF1TZ Zigbee Smart Irrigation Timer', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/main/Candeo%20CSF1TZ%20Zigbee%20Smart%20Irrigation%20Timer.groovy', singleThreaded: true) {
         capability 'Valve'
         capability 'Switch'
         capability 'Battery'
