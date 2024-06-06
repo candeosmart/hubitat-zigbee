@@ -27,7 +27,7 @@ metadata {
         attribute 'weatherDelay', 'enum', ['disabled', '24h', '48h', '72h']
         attribute 'waterConsumed', 'number'
 
-        command 'automaticCloseTimerTime', [[name:'Automatic Close Timer Time (s)*', type: 'NUMBER', description: 'Time (seconds) after which to automatically close the valve (minimum 60s, maximum 36000s).']]
+        command 'automaticCloseTimerTime', [[name:'Automatic Close Timer Time (s)*', type: 'NUMBER', description: 'Time (seconds) after which to automatically close the valve (minimum 30s, maximum 36000s).']]
 
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0004,0005,EF00', outClusters: '0019,000A', manufacturer: '_TZE200_81isopgh', model: 'TS0601', deviceJoinName: 'Candeo CSF1TZ Zigbee Smart Irrigation Timer'
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0004,0005,EF00', outClusters: '0019,000A', manufacturer: 'Candeo', model: 'CSF1TZ', deviceJoinName: 'Candeo CSF1TZ Zigbee Smart Irrigation Timer'
@@ -46,7 +46,7 @@ private @Field final String CANDEO = 'Candeo CSF1TZ Device Driver'
 private @Field final Boolean DEBUG = false
 private @Field final Integer LOGSOFF = 1800
 private @Field final Integer MAXAUTOCLOSETIME = 36000
-private @Field final Integer MINAUTOCLOSETIME = 60
+private @Field final Integer MINAUTOCLOSETIME = 30
 private @Field final Integer DEFAULTAUTOCLOSETIME = 600
 private @Field final String TUYACLUSTER = 'EF00'
 private @Field final List<Map<String,String,String>> TUYADATAPOINTS = [ ['name': 'State', 'id': '01', 'type': 'BOOLEAN'], ['name': 'Water Consumed ML', 'id': '05', 'type': 'VALUE'], ['name': 'Water Consumed L', 'id': '06', 'type': 'VALUE'], ['name': 'Battery', 'id': '07', 'type': 'VALUE'], ['name': 'Weather Delay', 'id': '0A', 'type': 'ENUM'],
