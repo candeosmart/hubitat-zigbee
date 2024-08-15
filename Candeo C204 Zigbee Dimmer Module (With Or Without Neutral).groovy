@@ -32,6 +32,7 @@ metadata {
         capability 'Configuration'
 
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0702,0B04,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C204', deviceJoinName: 'Candeo C204 Zigbee Dimmer Module (With Or Without Neutral)'
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0702,0B04,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-DM204', deviceJoinName: 'Candeo C204 Zigbee Dimmer Module (With Or Without Neutral)'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
