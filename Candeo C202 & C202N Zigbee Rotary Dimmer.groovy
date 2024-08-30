@@ -1,5 +1,5 @@
 /**
- *    Candeo C202 / C202N Zigbee Rotary Dimmer
+ *    Candeo C202 & C202N Zigbee Rotary Dimmer
  *    Candeo C201 Zigbee Dimmer Module
  *    Supports Momentary Switches
  *    Supports on / off / setLevel / flash
@@ -13,7 +13,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C202 / C202N Zigbee Rotary Dimmer', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/main/Candeo%20C202%20%26%20C202N%20Zigbee%20Rotary%20Dimmer.groovy', singleThreaded: true) {
+    definition(name: 'Candeo C202 & C202N Zigbee Rotary Dimmer', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/main/Candeo%20C202%20%26%20C202N%20Zigbee%20Rotary%20Dimmer.groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'SwitchLevel'
         capability 'Flash'
@@ -24,8 +24,8 @@ metadata {
 
         command 'setLevel', [[name:'Level*', type: 'NUMBER', description: 'Level to set (0 to 100)']]
 
-        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'Candeo Zigbee Dimmer', deviceJoinName: 'Candeo C202 / C202N Zigbee Rotary Dimmer'
-        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C202', deviceJoinName: 'Candeo C202 / C202N Zigbee Rotary Dimmer'
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'Candeo Zigbee Dimmer', deviceJoinName: 'Candeo C202 & C202N Zigbee Rotary Dimmer'
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C202', deviceJoinName: 'Candeo C202 & C202N Zigbee Rotary Dimmer'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -43,7 +43,7 @@ metadata {
 
 import groovy.transform.Field
 
-private @Field final String CANDEO = 'Candeo C202 / C202N Device Driver'
+private @Field final String CANDEO = 'Candeo C202 & C202N Device Driver'
 private @Field final Boolean DEBUG = false
 private @Field final Integer LOGSOFF = 1800
 private @Field final Map PREFFALSE = [value: 'false', type: 'bool']
