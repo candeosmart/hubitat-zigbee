@@ -7,7 +7,7 @@
  *    Reports power / energy / current / voltage events (whole device)
  *    Has Setting For Determination Of Master State
  *    Has Settings For Power Reporting
- *    Has Settings For Volage Reporting
+ *    Has Settings For Voltage Reporting
  *    Has Settings For Current Reporting
  *    Has Settings For Energy Reporting
  *    Via Child Devices:
@@ -20,7 +20,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SM205-2G Zigbee 2-Gang Switch Module (L+N)', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SM205-2G Zigbee 2-Gang Switch Module (L+N)', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/main/Candeo%20C-ZB-SM205-2G%20Zigbee%202-Gang%20Switch%20Module%20(L%2BN).groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'Flash'
         capability 'PowerMeter'
