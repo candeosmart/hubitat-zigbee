@@ -15,9 +15,8 @@
  *    CCT Mode (WCWCV+) - In this mode the device uses the W and C channels to present CCT values.
  */
 
-//TODO - set IMPORT url
 metadata {
-    definition(name: 'Candeo C-ZB-LC20 Smart LED Controller (CCT Mode)', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-LC20 Smart LED Controller (CCT Mode)', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-LC20%20Smart%20LED%20Controller%20(CCT%20Mode).groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'SwitchLevel'
         capability 'ChangeLevel'

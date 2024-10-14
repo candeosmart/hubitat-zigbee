@@ -14,9 +14,8 @@
  *    RGB Mode (BGRV+) - In this mode the device uses the BGR channels to present full colours.
  */
 
-//TODO - set IMPORT url
 metadata {
-    definition(name: 'Candeo C-ZB-LC20 Smart LED Controller (RGB Mode)', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-LC20 Smart LED Controller (RGB Mode)', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-LC20%20Smart%20LED%20Controller%20(RGB%20Mode).groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'SwitchLevel'
         capability 'ChangeLevel'
