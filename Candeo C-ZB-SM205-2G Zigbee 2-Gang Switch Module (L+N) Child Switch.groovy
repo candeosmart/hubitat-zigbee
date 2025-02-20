@@ -1,6 +1,6 @@
 /**
  *    Candeo C-ZB-SM205-2G Zigbee 2-Gang Switch Module (L+N) Child Switch
- *    Supports Toggle Switches
+ *    Supports Momentary & Toggle Switches
  *    Supports on / off / flash
  *    Reports switch events
  *    Has Setting For Flash Time
@@ -17,6 +17,7 @@ metadata {
         capability 'Initialize'
         capability 'Refresh'
         capability 'Configuration'
+        command 'resetPreferencesToDefault'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -25,7 +26,7 @@ metadata {
         input name: 'hubStartupDefaultCommand', type: 'enum', title: 'Explicit Command After Hub Has Restarted', description: '<small>After the hub restarts, carry out this command on the device.</small><br><br>', options: PREFHUBRESTART, defaultValue: 'refresh'
         input name: 'loggingOption', type: 'enum', title: 'Logging Option', description: '<small>Sets the logging level cumulatively, for example "Driver Trace Logging" will include all logging levels below it.</small><br><br>', options: PREFLOGGING, defaultValue: '5'
         input name: 'deviceConfigurationOptions', type: 'hidden', title: '<strong>Device Configuration Options</strong>', description: '<small>The following options change the behaviour of the device itself, they take effect after hitting "<strong>Save Preferences</strong> below", followed by "<strong>Configure</strong>" above.<br><br>For a battery powered device, you may also need to wake it up manually!</small>'
-        input name: 'powerOnDefault', type: 'enum', title: 'Default State After Return From Power Failure', description: '<small>After a power failure, set the device to this state when the power is restored.</small><br><br>', options: PREFPOWERON, defaultValue: 'previous'
+        input name: 'deviceConfigDefaultPowerOnBehaviour', type: 'enum', title: 'Default State After Return From Power Failure', description: '<small>After a power failure, set the device to this state when the power is restored.</small><br><br>', options: PREFPOWERON, defaultValue: 'previous'
         input name: 'platformOptions', type: 'hidden', title: '<strong>Platform Options</strong>', description: '<small>The following options are relevant to the Hubitat platform and UI itself.</small>'
     }
 }
@@ -37,6 +38,9 @@ private @Field final Boolean DEBUG = false
 private @Field final Integer LOGSOFF = 1800
 private @Field final Map PREFFALSE = [value: 'false', type: 'bool']
 private @Field final Map PREFTRUE = [value: 'true', type: 'bool']
+private @Field final Map PREFPREVIOUS = [value: 'previous', type: 'enum']
+private @Field final Map PREF10 = [value: '10', type: 'enum']
+private @Field final Map PREF5 = [value: '5', type: 'enum']
 private @Field final Map PREFPOWERON = [ 'off': 'Off', 'on': 'On', 'opposite': 'Opposite', 'previous': 'Previous' ]
 private @Field final Map PREFHUBRESTART = [ 'off': 'Off', 'on': 'On', 'refresh': 'Refresh State Only', 'nothing': 'Do Nothing' ]
 private @Field final Map PREFFLASHTIME = ['500': '500ms', '750': '750ms', '1000': '1000ms', '1500': '1500ms', '2000': '2000ms', '2500': '2500ms', '3000': '3000ms', '4000': '4000ms', '5000': '5000ms']
@@ -44,16 +48,23 @@ private @Field final Map PREFFLASHTIMEOUT = ['0': 'never', '1': '1m', '2': '2m',
 private @Field final Map PREFLOGGING = ['0': 'Device Event Logging', '1': 'Driver Informational Logging', '2': 'Driver Warning Logging', '3': 'Driver Error Logging', '4': 'Driver Debug Logging', '5': 'Driver Trace Logging' ]
 
 void installed() {
+    logTrace('installed called', true)
+    resetPreferencesToDefault()
+}
+
+void resetPreferencesToDefault() {
     logsOn()
-    logTrace('installed called')
-    device.updateSetting('powerOnDefault', 'previous')
-    logInfo("powerOnDefault setting is: ${PREFPOWERON[powerOnDefault]}")
-    device.updateSetting('hubStartupDefaultCommand', 'refresh')
+    logTrace('resetPreferencesToDefault called')
+    settings.keySet().each { String setting ->
+        device.removeSetting(setting)
+    }
+    device.updateSetting('deviceConfigDefaultPowerOnBehaviour', PREFPREVIOUS)
+    logInfo("deviceConfigDefaultPowerOnBehaviour setting is: ${PREFPOWERON[deviceConfigDefaultPowerOnBehaviour]}")
+    device.updateSetting('hubStartupDefaultCommand', [value: 'refresh', type: 'enum'])
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand]}")
-    device.updateSetting('levelTransitionTime', [value: '1000', type: 'enum'])
     device.updateSetting('flashTime', [value: '750', type: 'enum'])
     logInfo("flashTime setting is: ${PREFFLASHTIME[flashTime]}")
-    device.updateSetting('flashTimeout', [value: '10', type: 'enum'])
+    device.updateSetting('flashTimeout', PREF10)
     logInfo("flashTimeout setting is: ${PREFFLASHTIMEOUT[flashTimeout]}")
     logInfo('logging level is: Driver Trace Logging')
     logInfo("logging level will reduce to Driver Error Logging after ${LOGSOFF} seconds")
@@ -85,7 +96,7 @@ void initialize() {
 void updated() {
     logTrace('updated called')
     logTrace("settings: ${settings}")
-    logInfo("powerOnDefault setting is: ${PREFPOWERON[powerOnDefault ?: 'previous']}", true)
+    logInfo("deviceConfigDefaultPowerOnBehaviour setting is: ${PREFPOWERON[deviceConfigDefaultPowerOnBehaviour ?: 'previous']}", true)
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand ?: 'refresh']}", true)
     logInfo("flashTime setting is: ${PREFFLASHTIME[flashTime ?: '750']}", true)
     logInfo("flashTimeout setting is: ${PREFFLASHTIMEOUT[flashTimeout ?: '10']}", true)
@@ -95,7 +106,10 @@ void updated() {
         logInfo("logging level will reduce to Driver Error Logging after ${LOGSOFF} seconds", true)
         runIn(LOGSOFF, logsOff)
     }
-    logInfo('if you have changed any Device Configuration Options, make sure that you hit Configure above!', true)
+    if (checkPreferences()) {
+        logInfo('Device Configuration Options have been changed, will now configure the device!', true)
+        configure()
+    }
 }
 
 void logsOff() {
@@ -152,9 +166,9 @@ void flash(BigDecimal rate = null) {
             flashRate = flashTime ? flashTime.toInteger() : 750
         }
         logDebug("flashRate: ${flashRate}")
-        if (flashRate < 500) {
-            logWarn('flashRate is lower than 500ms, resetting to safe value')
-            flashRate = 500
+        if (flashRate > 5000 || flashRate < 500) {
+            flashRate = flashRate > 5000 ? 5000 : flashRate < 500 ? 500 : flashRate
+            logWarn('flashRate outside safe range (500 - 5000), resetting to safe value!')
         }
         runInMillis(flashRate, flasher, [data: ['on': !(state['flashPrevious']), 'rate': flashRate]])
         logDebug("flashTimeout: ${flashTimeout ?: '10'}")
@@ -241,7 +255,7 @@ void parse(Map event) {
         else if (event.name == 'startupBehaviour') {
             Map<String, String> startUpOnOff = ['00': 'off', '01': 'on', '02': 'opposite', '03': 'previous', 'FF': 'previous']
             String startupBehaviour = PREFPOWERON[startUpOnOff[event.value]] ?: "${event.value} (unknown}"
-            logDebug("powerOnDefault is currently set to: ${PREFPOWERON[powerOnDefault ?: 'previous']} and device reports it is set to: ${startupBehaviour}")
+            logDebug("deviceConfigDefaultPowerOnBehaviour is currently set to: ${PREFPOWERON[deviceConfigDefaultPowerOnBehaviour ?: 'previous']} and device reports it is set to: ${startupBehaviour}")
         }
         else {
             logWarn('unexpected event type!')
@@ -279,7 +293,7 @@ private Map processEvent(Map event) {
 
 private Boolean logMatch(String logLevel) {
     Map<String, String> logLevels = ['event': '0', 'info': '1', 'warn': '2', 'error': '3', 'debug': '4', 'trace': '5' ]
-    return loggingOption ? loggingOption.toInteger() >= logLevels[logLevel].toInteger() : false
+    return loggingOption ? loggingOption.toInteger() >= logLevels[logLevel].toInteger() : true
 }
 
 private String logTrace(String msg, Boolean override = false) {
@@ -326,7 +340,7 @@ private String logMsg(String msg) {
 
 private void logsOn() {
     logTrace('logsOn called', true)
-    device.updateSetting('loggingOption', [value: '5', type: 'enum'])
+    device.updateSetting('loggingOption', PREF5)
     runIn(LOGSOFF, logsOff)
 }
 
@@ -335,4 +349,26 @@ private void clearAll() {
     state.clear()
     atomicState.clear()
     unschedule()
+}
+
+private Boolean checkPreference(String preference) {
+    logTrace("checkPreference called preference: ${preference}")
+    String oldPreference = preference + '_OLD'
+    String newPreferenceValue = settings.containsKey(preference) ? settings[preference].toString() : 'unknown'
+    logDebug("newPreferenceValue: ${newPreferenceValue}")
+    String oldPreferenceValue = settings.containsKey(oldPreference) ? settings[oldPreference].toString() : 'unknown'
+    logDebug("oldPreferenceValue: ${oldPreferenceValue}")
+    if (oldPreferenceValue != newPreferenceValue) {
+        device.updateSetting(oldPreference, newPreferenceValue)
+        return true
+    }
+    return false
+}
+
+private Boolean checkPreferences() {
+    logTrace('checkPreferences called')
+    Set deviceConfig = settings.keySet().findAll { String preference ->
+        preference.startsWith('deviceConfig') && preference.indexOf('_OLD') == -1 && checkPreference(preference)
+    }
+    return (deviceConfig.size() > 0)
 }
