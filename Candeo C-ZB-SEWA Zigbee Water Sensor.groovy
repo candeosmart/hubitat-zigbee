@@ -6,7 +6,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SEWA Zigbee Water Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SEWA Zigbee Water Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SEWA%20Zigbee%20Water%20Sensor.groovy', singleThreaded: true) {
         capability 'WaterSensor'
         capability 'Battery'
         capability 'Sensor'

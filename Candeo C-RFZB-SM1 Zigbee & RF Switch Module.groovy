@@ -9,7 +9,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-RFZB-SM1 Zigbee & RF Switch Module', namespace: 'Candeo', author: 'Candeo', importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-RFZB-SM1 Zigbee & RF Switch Module', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-RFZB-SM1%20Zigbee%20%26%20RF%20Switch%20Module.groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'Flash'
         capability 'Actuator'

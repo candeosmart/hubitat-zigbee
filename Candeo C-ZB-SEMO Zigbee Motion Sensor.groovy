@@ -7,7 +7,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SEMO Zigbee Motion Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SEMO Zigbee Motion Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SEMO%20Zigbee%20Motion%20Sensor.groovy', singleThreaded: true) {
         capability 'MotionSensor'
         capability 'IlluminanceMeasurement'
         capability 'Battery'

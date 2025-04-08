@@ -6,7 +6,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SEDC Zigbee Contact Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SEDC Zigbee Contact Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SEDC%20Zigbee%20Contact%20Sensor.groovy', singleThreaded: true) {
         capability 'ContactSensor'
         capability 'Battery'
         capability 'Sensor'

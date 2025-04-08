@@ -9,7 +9,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SETE Zigbee Temperature & Humidity Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SETE Zigbee Temperature & Humidity Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SETE%20Zigbee%20Temperature%20%26%20Humidity%20Sensor.groovy', singleThreaded: true) {
         capability 'TemperatureMeasurement'
         capability 'RelativeHumidityMeasurement'
         capability 'Battery'
