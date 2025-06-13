@@ -241,6 +241,20 @@ private void processIlluminanceMeasurementCluster(Map descriptionMap, List<Map> 
                 logDebug("illuminance measurement measured value report is ${illuminanceValue}")
                 illuminanceValue = Math.pow(10, (illuminanceValue / 10000)) + 1
                 logDebug("calculated illuminance is ${illuminanceValue}")
+                if (illuminanceValue > 0 && illuminanceValue <= 2200) {
+                    illuminanceValue = -7.969192 + (0.0151988 * illuminanceValue)
+                    logDebug("illuminanceValue1 is ${illuminanceValue}")
+                }
+                else if (illuminanceValue > 2200 && illuminanceValue <= 2500) {
+                    illuminanceValue = -1069.189434 + (0.4950663 * illuminanceValue)
+                    logDebug("illuminanceValue2 is ${illuminanceValue}")
+                }
+                else if (illuminanceValue > 2500) {
+                    illuminanceValue = (78029.21628 - (61.73575 * illuminanceValue)) + (0.01223567 * (illuminanceValue ** 2))
+                    logDebug("illuminanceValue2 is ${illuminanceValue}")
+                }
+                illuminanceValue = illuminanceValue < 1 ? 1 : illuminanceValue
+                logDebug("calibrated illuminance is ${illuminanceValue}")
                 String descriptionText = "${device.displayName} illuminance is ${illuminanceValue}lx"
                 logEvent(descriptionText)
                 events.add(processEvent([name: 'illuminance', value: illuminanceValue, unit: 'lx', descriptionText: descriptionText]))
