@@ -6,7 +6,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SESO Zigbee Soil Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SESO Zigbee Soil Sensor', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SESO%20Zigbee%20Soil%20Sensor.groovy', singleThreaded: true) {
         capability 'TemperatureMeasurement'
         capability 'RelativeHumidityMeasurement'
         capability 'Battery'
