@@ -14,7 +14,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-DM201-2G Zigbee 2-Gang Dimmer Module Child Switch', namespace: 'Candeo', author: 'Candeo', component: true, importUrl: '', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-DM201-2G Zigbee 2-Gang Dimmer Module Child Switch', namespace: 'Candeo', author: 'Candeo', component: true, importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-DM201-2G%20Zigbee%202-Gang%20Dimmer%20Module%20Child%20Switch.groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'SwitchLevel'
         capability 'ChangeLevel'
