@@ -33,7 +33,6 @@ metadata {
 
         command 'resetPreferencesToDefault'
 
-        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,1000', outClusters: '0019', manufacturer: 'HZC', model: 'DimmerSwitch-2Gang-ZB3.0', deviceJoinName: 'Candeo C-ZB-DM201-2G Zigbee 2-Gang Dimmer Module'
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-DM201-2G', deviceJoinName: 'Candeo C-ZB-DM201-2G Zigbee 2-Gang Dimmer Module'
     }
     preferences {
