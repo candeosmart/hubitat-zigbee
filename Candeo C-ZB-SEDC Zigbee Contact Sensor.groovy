@@ -148,7 +148,7 @@ private List<Map> processIASEvents(String description, List<Map> events = []) {
             String contactState = alarmState ? 'open' : 'closed'
             String descriptionText = "${device.displayName} contact is ${contactState}"
             logEvent(descriptionText)
-            events.add(processEvent([name: 'motion', value: contactState, descriptionText: descriptionText]))
+            events.add(processEvent([name: 'contact', value: contactState, descriptionText: descriptionText]))
         }
         else {
             logDebug('could not parse zoneStatus')
