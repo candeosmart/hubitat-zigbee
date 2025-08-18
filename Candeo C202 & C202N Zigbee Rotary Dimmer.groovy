@@ -24,6 +24,7 @@ metadata {
 
         command 'setLevel', [[name:'Level*', type: 'NUMBER', description: 'Level to set (0 to 100)']]
 
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C201', deviceJoinName: 'Candeo C201 Dimmer'
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'Candeo Zigbee Dimmer', deviceJoinName: 'Candeo C202 & C202N Zigbee Rotary Dimmer'
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0B05,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C202', deviceJoinName: 'Candeo C202 & C202N Zigbee Rotary Dimmer'
     }
