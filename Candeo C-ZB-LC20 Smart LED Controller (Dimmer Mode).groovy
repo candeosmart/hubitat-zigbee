@@ -25,6 +25,9 @@ metadata {
         capability 'Configuration'
 
         fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20-Dim', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (Dimmer Mode)'
+        fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20-DIM', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (Dimmer Mode)'
+        fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20v2-Dim', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (Dimmer Mode)'
+        fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20v2-DIM', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (Dimmer Mode)'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -138,7 +141,7 @@ List<String> configure() {
     Integer startUpOnOff = startUpOnOffValues[powerOnDefault ?: 'previous']
     logDebug("startUpOnOff: ${startUpOnOff}")
     Integer startUpLevel = powerOnDefaultLevel ? powerOnDefaultLevel == 'previous' ? 255 : (powerOnDefaultLevel.toInteger() * 2.54).toInteger() : 255
-	logDebug("startUpLevel: ${startUpLevel}")
+    logDebug("startUpLevel: ${startUpLevel}")
     List<String> cmds = ["zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0006 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
                          "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 0x0000 ${DataType.BOOLEAN} 0 3600 {}", "delay ${ZIGBEEDELAY}",
                          "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0008 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
@@ -558,11 +561,18 @@ private void doZigBeeCommand(List<String> cmds) {
 private String intTo16bitUnsignedHex(Integer value, Boolean reverse = true) {
     String hexStr = zigbee.convertToHexString(value.toInteger(), 4)
     if (reverse) {
-    	return new String(hexStr.substring(2, 4) + hexStr.substring(0, 2))
+        return new String(hexStr.substring(2, 4) + hexStr.substring(0, 2))
     }
     return hexStr
 }
 
 private String intTo8bitUnsignedHex(Integer value) {
     return zigbee.convertToHexString(value.toInteger(), 2)
+}
+
+private Boolean v2() {
+    logTrace('v2 called')
+    String model = device.getDataValue('model').contains('V2') ? 'v2' : 'v1'
+    logTrace("${model} model detected")
+    return model == 'v2'
 }

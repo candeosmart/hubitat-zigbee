@@ -29,6 +29,7 @@ metadata {
         capability 'Configuration'
 
         fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20-CCT', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (CCT Mode)'
+        fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20v2-CCT', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (CCT Mode)'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -163,13 +164,21 @@ List<String> configure() {
                          "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 0x4003 {}", "delay ${ZIGBEEDELAY}",
                          "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 0x20 {0x${intTo8bitUnsignedHex(startUpLevel)}} {}", "delay ${ZIGBEEDELAY}",
                          "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 {}", "delay ${ZIGBEEDELAY}",
-                         "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0300 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
-                         "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x4010 0x21 {0x${intTo16bitUnsignedHex(startUpColourTemperature, false)}} {}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x4010 {}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x400b {}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x400c {}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0007 {}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+                         "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0300 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}"]
+    if (v2()) {
+        cmds += ["he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0000 ${DataType.UINT8} 1 3600 {01}", "delay ${ZIGBEEDELAY}",
+                "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0001 ${DataType.UINT8} 1 3600 {01}", "delay ${ZIGBEEDELAY}",
+                "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0007 ${DataType.UINT16} 0 3600 {65279}", "delay ${ZIGBEEDELAY}",
+                "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 ${DataType.ENUM8} 0 3600 {}", "delay ${ZIGBEEDELAY}"]
+    }
+    cmds += ["he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x4010 0x21 {0x${intTo16bitUnsignedHex(startUpColourTemperature, false)}} {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x4010 {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x400b {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x400c {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0000 {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0001 {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0007 {}", "delay ${ZIGBEEDELAY}",
+            "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
     logDebug("sending ${cmds}")
     return cmds
 }
@@ -385,7 +394,10 @@ List<String> setColorTemperature(BigDecimal colourTemperature, BigDecimal level,
         colourTemperatureMireds = Math.round(1000000 / (colourTemperature > 6329 ? 6329 : colourTemperature < 2000 ? 2000 : colourTemperature))
     }
     logDebug("colourTemperatureMireds: ${colourTemperatureMireds}")
-    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 10 {0x${intTo16bitUnsignedHex(colourTemperatureMireds)} 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}", "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0007 {}", "delay ${ZIGBEEDELAY}", "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 10 {0x${intTo16bitUnsignedHex(colourTemperatureMireds)} 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}"]
+    if (!v2()) {
+        cmds += ["he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0007 {}", "delay ${ZIGBEEDELAY}", "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    }
     logDebug("sending ${cmds}")
     return cmds
 }
@@ -605,7 +617,7 @@ private void processColourEvent(Map descriptionMap, List<Map> events) {
                 events.add(processEvent([name: 'colorMode', value: colourMode, descriptionText: descriptionText]))
             }
             else if (descriptionMap.attrId == '4010' || descriptionMap.attrInt == 16400) {
-                logDebug('level control (0300) startup colour temperature mireds report (4010)')
+                logDebug('colour control (0300) startup colour temperature mireds report (4010)')
                 Integer startUpColourTemperatureMiredValue = zigbee.convertHexToInt(descriptionMap.value)
                 logDebug("startUpColourTemperatureMiredValue is ${startUpColourTemperatureMiredValue}")
                 String startUpColourTemperatureMiredBehaviour = 'Previous'
@@ -618,14 +630,14 @@ private void processColourEvent(Map descriptionMap, List<Map> events) {
                 logDebug("powerOnDefaultColourTemperature is currently set to: ${PREFCOLOURTEMPERATUREON[powerOnDefaultColourTemperature ?: 'previous']} and device reports it is set to: ${startUpColourTemperatureMiredBehaviour}")
             }
             else if (descriptionMap.attrId == '400b' || descriptionMap.attrInt == 16395) {
-                logDebug('level control (0300) physical minimum mireds report (4010)')
+                logDebug('colour control (0300) physical minimum mireds report (4010)')
                 Integer physicalMinimumMireds = zigbee.convertHexToInt(descriptionMap.value)
                 logDebug("physicalMinimumMireds is ${physicalMinimumMireds}")
                 Integer physicalMaximumKelvin = Math.round((1000000 / physicalMinimumMireds))
                 logDebug("physicalMaximumKelvin: ${physicalMaximumKelvin} - ${COLOURTEMPERATURENAMES.find { k , v -> physicalMaximumKelvin < k }.value}")
             }
             else if (descriptionMap.attrId == '400c' || descriptionMap.attrInt == 16396) {
-                logDebug('level control (0300) physical maximum mireds report (4010)')
+                logDebug('colour control (0300) physical maximum mireds report (4010)')
                 Integer physicalMaximumMireds = zigbee.convertHexToInt(descriptionMap.value)
                 logDebug("physicalMaximumMireds is ${physicalMaximumMireds}")
                 Integer physicalMinimumKelvin = Math.round((1000000 / physicalMaximumMireds))
@@ -731,4 +743,11 @@ private String intTo16bitUnsignedHex(Integer value, Boolean reverse = true) {
 
 private String intTo8bitUnsignedHex(Integer value) {
     return zigbee.convertToHexString(value.toInteger(), 2)
+}
+
+private Boolean v2() {
+    logTrace('v2 called')
+    String model = device.getDataValue('model').contains('V2') ? 'v2' : 'v1'
+    logTrace("${model} model detected")
+    return model == 'v2'
 }

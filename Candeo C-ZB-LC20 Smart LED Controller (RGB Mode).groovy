@@ -30,6 +30,7 @@ metadata {
         command 'setColorValues', [[name:'Hue*', type: 'NUMBER', description: 'Hue to set (0 to 100)', required: true], [name:'Saturation*', type: 'NUMBER', description: 'Saturation to set (0 to 100)', required: true], [name:'Level*', type: 'NUMBER', description: 'Level to set (0 to 100)', required: true], [name:'Transition time', type: 'NUMBER', description: 'Transition time in seconds']]
 
         fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20-RGB', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (RGB Mode)'
+        fingerprint profileId: '0104', endpointId: '0B', inClusters: '0000,0003,0004,0005,0006,0008,0300,1000', outClusters: '0019', manufacturer: 'Candeo', model: 'C-ZB-LC20v2-RGB', deviceJoinName: 'Candeo C-ZB-LC20 Zigbee Smart Controller For LED Strips (RGB Mode)'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -159,8 +160,11 @@ List<String> configure() {
                          "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 {}", "delay ${ZIGBEEDELAY}",
                          "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0300 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
                          "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0000 ${DataType.UINT8} 1 3600 {01}", "delay ${ZIGBEEDELAY}",
-                         "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0001 ${DataType.UINT8} 1 3600 {01}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0000 {}", "delay ${ZIGBEEDELAY}",
+                         "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0001 ${DataType.UINT8} 1 3600 {01}", "delay ${ZIGBEEDELAY}"]
+    if (v2()) {
+        cmds += ["he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 ${DataType.ENUM8} 0 3600 {}", "delay ${ZIGBEEDELAY}"]
+    }
+    cmds += ["he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0000 {}", "delay ${ZIGBEEDELAY}",
                          "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0001 {}", "delay ${ZIGBEEDELAY}",
                          "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
     logDebug("sending ${cmds}")
@@ -389,7 +393,10 @@ List<String> setColor(Map<String,BigDecimal> colorMap, BigDecimal rate) {
         logWarn('hue outside range supported by device (0 - 100), resetting to closest value!')
     }
     logDebug("scaledHue: ${scaledHue}")
-    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 6 {0x${intTo8bitUnsignedHex(scaledHue)} 0x${intTo8bitUnsignedHex(scaledSaturation)} 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}",  "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 6 {0x${intTo8bitUnsignedHex(scaledHue)} 0x${intTo8bitUnsignedHex(scaledSaturation)} 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}"]
+    if (!v2()) {
+        cmds += ["he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    }
     logDebug("sending ${cmds}")
     return cmds
 }
@@ -424,7 +431,10 @@ List<String> setHue(BigDecimal hue, BigDecimal rate) {
     if (currentValue != 'on') {
         cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 1 {}", "delay ${ZIGBEEDELAY}"]
     }
-    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0 {0x${intTo8bitUnsignedHex(scaledHue)} 0x0 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}",  "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0 {0x${intTo8bitUnsignedHex(scaledHue)} 0x0 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}"]
+    if (!v2()) {
+        ["he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    }
     logDebug("sending ${cmds}")
     return cmds
 }
@@ -458,7 +468,10 @@ List<String> setSaturation(BigDecimal saturation, BigDecimal rate) {
     if (currentValue != 'on') {
         cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 1 {}", "delay ${ZIGBEEDELAY}"]
     }
-    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 3 {0x${intTo8bitUnsignedHex(scaledSaturation)} 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}",  "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    cmds += ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 3 {0x${intTo8bitUnsignedHex(scaledSaturation)} 0x${intTo16bitUnsignedHex(scaledRate)}}", "delay ${(scaledRate * 100) + ZIGBEEDELAY}"]
+    if (!v2()) {
+        cmds += ["he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0300 0x0008 {}"]
+    }
     logDebug("sending ${cmds}")
     return cmds
 }
@@ -812,4 +825,11 @@ private String intTo16bitUnsignedHex(Integer value, Boolean reverse = true) {
 
 private String intTo8bitUnsignedHex(Integer value) {
     return zigbee.convertToHexString(value.toInteger(), 2)
+}
+
+private Boolean v2() {
+    logTrace('v2 called')
+    String model = device.getDataValue('model').contains('V2') ? 'v2' : 'v1'
+    logTrace("${model} model detected")
+    return model == 'v2'
 }
