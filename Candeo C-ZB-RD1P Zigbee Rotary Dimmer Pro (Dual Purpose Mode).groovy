@@ -27,7 +27,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Dual Purpose Mode)', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Dual Purpose Mode)', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-RD1P%20Zigbee%20Rotary%20Dimmer%20Pro%20(Dual%20Purpose%20Mode).groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'SwitchLevel'
         capability 'ChangeLevel'

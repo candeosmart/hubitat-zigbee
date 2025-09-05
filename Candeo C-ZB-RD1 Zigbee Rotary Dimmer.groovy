@@ -20,7 +20,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-RD1 Zigbee Rotary Dimmer', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-RD1 Zigbee Rotary Dimmer', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-RD1%20Zigbee%20Rotary%20Dimmer.groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'SwitchLevel'
         capability 'ChangeLevel'
