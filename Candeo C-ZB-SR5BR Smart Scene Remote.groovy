@@ -11,7 +11,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SR5BR Smart Scene Remote', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SR5BR Smart Scene Remote', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/ea628d2e0590d782a611671c30b054feb8857be3/Candeo%20C-ZB-SR5BR%20Smart%20Scene%20Remote.groovy', singleThreaded: true) {
         capability 'PushableButton'
         capability 'DoubleTapableButton'
         capability 'ReleasableButton'
