@@ -95,6 +95,10 @@ List<String> configure() {
                         "he raw 0x${device.deviceNetworkId} 0x01 0x${device.endpointId} 0x0001 {10 00 08 00 2100}", "delay ${ZIGBEEDELAY}",
                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0001 0x0021 {}"
                         ]
+    if (!(isZigbee30())) {
+        logDebug('older zigbee version detected, binding endpoint')
+        cmds += ["zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0xFF03 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",]
+    }
     logDebug("sending ${cmds}")
     return cmds
 }
@@ -259,7 +263,7 @@ private void processManufacturerSpecificCluster(Map descriptionMap, List<Map> ev
                     String ringClicks = commandData[3]
                     logDebug("ringClicks: ${ringClicks}")
                     if (ringClicks != '00' && ringClicks != '01') {
-                        Integer extraRingEvents = ringClicks.toInteger() - 1
+                        Integer extraRingEvents = zigbee.convertHexToInt(ringClicks) - 1
                         logDebug("need to generate ${extraRingEvents} additional ring events")
                         for (Integer extraRingEvent : 1..extraRingEvents) {
                             logDebug("adding ${extraRingEvent} additional ring event")
@@ -396,4 +400,14 @@ private void buttonCommand(String action, Integer button) {
     if (button >= 1 && button <= 3) {
         sendEvent(buttonAction(action, button, 'digital'))
     }
+}
+
+private boolean isZigbee30() {
+    logTrace('isZigbee30 called')
+    String model = getHubVersion()
+    logDebug("model: ${model}")
+    String revision = model.split('-').last()
+    revision = revision.contains('Pro') ? '9' : revision
+    logDebug("revision: ${revision}")
+    return (Integer.parseInt(revision) >= 8)
 }
