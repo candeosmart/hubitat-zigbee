@@ -236,10 +236,10 @@ void parse(Map event) {
     if (event) {
         logDebug("got event: ${event}")
         if (event.name == 'switch') {
-            String descriptionText = "was turned ${event.value}"
+            String descriptionText = "${device.displayName} was turned ${event.value}"
             String currentValue = device.currentValue('switch')
             if (event.value == currentValue) {
-                descriptionText = "is ${event.value}"
+                descriptionText = "${device.displayName} is ${event.value}"
             }
             String type = 'physical'
             String action = state['action'] ?: 'standby'
