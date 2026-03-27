@@ -478,7 +478,7 @@ List<String> setLevel(BigDecimal level) {
 }
 
 List<String> setLevel(BigDecimal level, BigDecimal transition) {
-    logTrace("setLevel called level: ${level} rate: ${transition}")
+    logTrace("setLevel called level: ${level} transition: ${transition}")
     Integer scaledTransition = transition == 0 ? 0 : transition == 65535 ? 65535 : (transition * 10).toInteger()
     logDebug("scaledTransition: ${scaledTransition}")
     Integer scaledLevel = percentageValueToLevel(level)
