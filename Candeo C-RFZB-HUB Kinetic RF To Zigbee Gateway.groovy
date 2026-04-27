@@ -6,7 +6,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-RFZB-HUB Kinetic RF To Zigbee Gateway', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-RFZB-HUB Kinetic RF To Zigbee Gateway', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-RFZB-HUB%20Kinetic%20RF%20To%20Zigbee%20Gateway.groovy', singleThreaded: true) {
         capability 'PushableButton'
         capability 'DoubleTapableButton'
 
