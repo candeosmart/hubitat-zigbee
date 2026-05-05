@@ -20,7 +20,7 @@
  */
 
 metadata {
-    definition(name: 'Candeo C-ZB-SM30-2G Zigbee 2-Gang Switch Module (L+N)', namespace: 'Candeo', author: 'Candeo', importUrl: 'TBA', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SM30-2G Zigbee 2-Gang Switch Module (L+N)', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SM30-2G%20Zigbee%202-Gang%20Switch%20Module%20(L%2BN).groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'Flash'
         capability 'PowerMeter'
