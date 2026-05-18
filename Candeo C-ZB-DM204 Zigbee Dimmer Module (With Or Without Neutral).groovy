@@ -16,6 +16,7 @@
  *    Has Setting For Default On Level
  *    Has Setting For On / Off Transition Time
  *    Has Setting For Switch Input Type
+ *    Has Setting For Minimum Brightness Level
  *    Has Setting For Explicit State After Hub Startup
  */
 
@@ -65,6 +66,7 @@ metadata {
         input name: 'deviceConfigDefaultOnLevel', type: 'enum', title: 'Default Level When Turned On', description: '<small>When turned on, go immediately to this level.</small><br><br>', options: PREFLEVEL, defaultValue: 'previous'
         input name: 'deviceConfigDefaultOnOffTransitionTime', type: 'enum', title: 'On / Off Transition Time (s) When Turned On Or Off', description: '<small>When turned on or off, use this as the transition time to fade up (from off to on) or down (from on to off).</small><br><br>', options: PREFTRANSITIONTIME, defaultValue: '1000'
         input name: 'deviceConfigSwitchInputType', type: 'enum', title: 'Switch Input Type', description: '<small>Select the type of switch connected to the input. <strong>Power cycle the module for the setting to take effect.</strong></small><br><br>', options: PREFSWITCHINPUTTYPE, defaultValue: 'momentary'
+        input name: 'deviceConfigMinimumBrightnessLevel', type: 'number', title: 'Minimum Brightness Level (%)', description: '<small>Set the minimum brightness level for the device (0 - 50, 0 = do not use a minimum brightness level). <strong>Power cycle the module for the setting to take effect.</strong></small><br><br>', range: '0..50', defaultValue: 0
         input name: 'platformOptions', type: 'hidden', title: '<strong>Platform Options</strong>', description: '<small>The following options are relevant to the Hubitat platform and UI itself.</small>'
     }
 }
@@ -77,6 +79,7 @@ private @Field final Integer LOGSOFF = 1800
 private @Field final Integer ZIGBEEDELAY = 1000
 private @Field final Integer DEVICEMINLEVEL = 1
 private @Field final Integer DEVICEMAXLEVEL = 254
+private @Field final BigDecimal DEVICEMINSETTRANSFORM = 1.84252
 private @Field final Map PREFFALSE = [value: 'false', type: 'bool']
 private @Field final Map PREFTRUE = [value: 'true', type: 'bool']
 private @Field final Map PREFPREVIOUS = [value: 'previous', type: 'enum']
@@ -122,6 +125,8 @@ void resetPreferencesToDefault() {
     logInfo("deviceConfigDefaultOnOffTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOnOffTransitionTime]}")
     device.updateSetting('deviceConfigSwitchInputType', [value: 'momentary', type: 'enum'])
     logInfo("deviceConfigSwitchInputType setting is: ${PREFSWITCHINPUTTYPE[deviceConfigSwitchInputType]}")
+    device.updateSetting('deviceConfigMinimumBrightnessLevel', [value: '0', type: 'number'])
+    logInfo("deviceConfigMinimumBrightnessLevel setting is: ${deviceConfigMinimumBrightnessLevel}")
     device.updateSetting('hubStartupDefaultCommand', [value: 'refresh', type: 'enum'])
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand]}")
     device.updateSetting('levelTransitionTime', PREFDEVICE)
@@ -191,6 +196,7 @@ List<String> updated() {
     logInfo("deviceConfigDefaultOnLevel setting is: ${PREFLEVEL[deviceConfigDefaultOnLevel ?: 'previous']}", true)
     logInfo("deviceConfigDefaultOnOffTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOnOffTransitionTime ?: '1000']}", true)
     logInfo("deviceConfigSwitchInputType setting is: ${PREFSWITCHINPUTTYPE[deviceConfigSwitchInputType ?: 'momentary']}", true)
+    logInfo("deviceConfigMinimumBrightnessLevel setting is: ${deviceConfigMinimumBrightnessLevel ?: '0'}", true)
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand ?: 'refresh']}", true)
     logInfo("levelTransitionTime setting is: ${PREFLEVELTRANSITIONTIME[levelTransitionTime ?: 'device']}", true)
     logInfo("levelChangeRate setting is: ${PREFLEVELCHANGERATE[levelChangeRate ?: 'none']}", true)
@@ -256,6 +262,9 @@ List<String> configure() {
     logDebug("switch input type is ${deviceConfigSwitchInputType ?: 'momentary'}")
     Map<String, String> deviceConfigSwitchInputTypes = ['momentary': 0x00, 'toggle': 0x01]
     logDebug("switchInputType: ${deviceConfigSwitchInputTypes[deviceConfigSwitchInputType ?: 'momentary']}")
+    logDebug("minimum brightness level is ${deviceConfigMinimumBrightnessLevel ?: 0}")
+    Integer minimumBrightnessLevel = deviceConfigMinimumBrightnessLevel ? 4 + Math.round(DEVICEMINSETTRANSFORM * percentageValueToLevel(deviceConfigMinimumBrightnessLevel)) : 4
+    logDebug("minimumBrightnessLevel: ${minimumBrightnessLevel}")
     List<String> cmds = [//onoff
                          "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0006 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
                          "he cr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 0x0000 ${DataType.BOOLEAN} 0 3600 {}", "delay ${ZIGBEEDELAY}",
@@ -295,7 +304,11 @@ List<String> configure() {
                          //switchinputtype
                          "he raw 0x${device.deviceNetworkId} 0x01 0x${device.endpointId} 0x0000 {04 24 12 00 00 03 88}", "delay ${ZIGBEEDELAY}",
                          "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0000 0x8803 ${convertToHexString(DataType.UINT8)} {${deviceConfigSwitchInputTypes[deviceConfigSwitchInputType ?: 'momentary']}} {1224}", "delay ${ZIGBEEDELAY}",
-                         "he raw 0x${device.deviceNetworkId} 0x01 0x${device.endpointId} 0x0000 {04 24 12 00 00 03 88}", "delay ${ZIGBEEDELAY}"]
+                         "he raw 0x${device.deviceNetworkId} 0x01 0x${device.endpointId} 0x0000 {04 24 12 00 00 03 88}", "delay ${ZIGBEEDELAY}",
+                         //minimumbrightnesslevel
+                         "he raw 0x${device.deviceNetworkId} 0x01 0x${device.endpointId} 0x0000 {04 24 12 00 00 09 78}", "delay ${ZIGBEEDELAY}",
+                         "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0000 0x7809 ${convertToHexString(DataType.UINT8)} {${convertToHexString(minimumBrightnessLevel)}} {1224}", "delay ${ZIGBEEDELAY}",
+                         "he raw 0x${device.deviceNetworkId} 0x01 0x${device.endpointId} 0x0000 {04 24 12 00 00 09 78}", "delay ${ZIGBEEDELAY}"]
     if (deviceConfigPowerReportEnable || deviceConfigVoltageReportEnable || deviceConfigCurrentReportEnable) {
         cmds += ["zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0B04 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}"]
     }
@@ -523,7 +536,7 @@ List<String> setLevel(BigDecimal level, BigDecimal transition) {
     logDebug("scaledTransition: ${scaledTransition}")
     Integer scaledLevel = percentageValueToLevel(level)
     logDebug("scaledLevel: ${scaledLevel}")
-    List<String> cmds = ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 4 {0x${intTo8bitUnsignedHex(scaledLevel)} 0x${intTo16bitUnsignedHex(scaledTransition)}}"]
+    List<String> cmds = ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 4 {0x${intTo8bitUnsignedHex(scaledLevel)} 0x${intTo16bitUnsignedHex(scaledTransition)} 0x0 0x0}"]
     logDebug("sending ${cmds}")
     state['action'] = 'digitalsetlevel'
     return cmds
@@ -625,10 +638,18 @@ private void processBasicEvent(Map descriptionMap, List<Map> events) {
         case '01':
             if (descriptionMap.attrId == '8803' || descriptionMap.attrInt == 34819) {
                 logDebug('basic (0000) switch type report (8803)')
-                String deviceConfigSwitchInputTypeValue = descriptionMap.value
+                String switchInputTypeValue = descriptionMap.value
                 Map<String, String> deviceConfigSwitchInputTypes = ['00': 'momentary', '01': 'toggle']
-                String deviceConfigSwitchInputTypeBehaviour = PREFSWITCHINPUTTYPE[deviceConfigSwitchInputTypes[deviceConfigSwitchInputTypeValue]] ?: "${deviceConfigSwitchInputTypeValue} (unknown}"
-                logDebug("deviceConfigSwitchInputType is currently set to: ${PREFSWITCHINPUTTYPE[deviceConfigSwitchInputType ?: 'previous']} and device reports it is set to: ${deviceConfigSwitchInputTypeBehaviour}")
+                String switchInputType = PREFSWITCHINPUTTYPE[deviceConfigSwitchInputTypes[switchInputTypeValue]] ?: "${switchInputTypeValue} (unknown}"
+                logDebug("deviceConfigSwitchInputType is currently set to: ${PREFSWITCHINPUTTYPE[deviceConfigSwitchInputType ?: 'previous']} and device reports it is set to: ${switchInputType}")
+            }
+            else if (descriptionMap.attrId == '7809' || descriptionMap.attrInt == 30729) {
+                logDebug('basic (0000) minimum brightness level report (7809)')
+                Integer minimumBrightnessLevel = zigbee.convertHexToInt(descriptionMap.value)
+                logDebug("minimumBrightnessLevel: ${minimumBrightnessLevel}")
+                minimumBrightnessLevel = levelValueToPercentage((minimumBrightnessLevel - 4) / DEVICEMINSETTRANSFORM)
+                logDebug("minimumBrightnessLevel: ${minimumBrightnessLevel}")
+                logDebug("deviceConfigMinimumBrightnessLevel is currently set to: ${deviceConfigMinimumBrightnessLevel ?: '0'} and device reports it is set to: ${minimumBrightnessLevel}")
             }
             else {
                 logDebug('basic (0000) attribute skipped')
@@ -1011,6 +1032,14 @@ private String convertToHexString(Integer value, Integer minBytes = 1, Boolean r
 private String reverseStringOfBytes(String value) {
     logTrace("reverseStringOfBytes called value: ${value}")
     return value.split('(?<=\\G..)').reverse().join()
+}
+
+private Integer levelValueToPercentage(BigDecimal levelValue) {
+    return levelValueToPercentage(levelValue.toInteger())
+}
+
+private Integer levelValueToPercentage(String levelValue) {
+    return levelValueToPercentage(levelValue.toInteger())
 }
 
 private Integer levelValueToPercentage(Integer levelValue) {
