@@ -1,12 +1,12 @@
 /**
- *    Candeo C-RFZB-HUB Kinetic RF To Zigbee Gateway
+ *    Candeo C-RFZB-GW1 Kinetic RF To Zigbee Gateway
  *    Exposes up to 10 Kinetic RF switches as buttons
  *    Has setting for how many multi press events to detect and raise
  *    Has setting for the detection time window for detecting them
  */
 
 metadata {
-    definition(name: 'Candeo C-RFZB-HUB Kinetic RF To Zigbee Gateway', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-RFZB-HUB%20Kinetic%20RF%20To%20Zigbee%20Gateway.groovy', singleThreaded: true) {
+    definition(name: 'Candeo C-RFZB-GW1 Kinetic RF To Zigbee Gateway', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-RFZB-GW1%20Kinetic%20RF%20To%20Zigbee%20Gateway.groovy', singleThreaded: true) {
         capability 'PushableButton'
         capability 'DoubleTapableButton'
 
@@ -21,7 +21,7 @@ metadata {
         command 'quintupleTap', [ [ name: 'Button number to quintuple tap *', type: 'ENUM', constraints: BUTTONS ] ]
         command 'resetPreferencesToDefault'
 
-        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0006,0003,0004,0005', manufacturer: 'Candeo', model: 'C-RFZB-HUB', deviceJoinName: 'Candeo C-RFZB-HUB Kinetic RF To Zigbee Gateway'
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0006,0003,0004,0005', manufacturer: 'Candeo', model: 'C-RFZB-GW1', deviceJoinName: 'Candeo C-RFZB-GW1 Kinetic RF To Zigbee Gateway'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -34,7 +34,7 @@ metadata {
 
 import groovy.transform.Field
 
-private @Field final String CANDEO = 'Candeo C-RFZB-HUB Device Driver'
+private @Field final String CANDEO = 'Candeo C-RFZB-GW1 Device Driver'
 private @Field final Boolean DEBUG = false
 private @Field final Integer LOGSOFF = 1800
 private @Field final Integer ZIGBEEDELAY = 200
