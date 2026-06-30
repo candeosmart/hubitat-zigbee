@@ -1,7 +1,7 @@
 /**
  *    Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Remote Mode)
  *    Reports power / energy / current / voltage events
- *    Reports button 1 pushed & double tapped events for press / double press on knob
+ *    Reports button 1 pushed, double tapped, held and released events for press / double press / hold / release on knob
  *    Reports button 2 pushed events for clockwise step rotation of the knob
  *    Reports button 2 held events for starting clockwise rotation of the knob
  *    Reports button 2 released events for stopping clockwise rotation of the knob
@@ -31,6 +31,7 @@ metadata {
         command 'resetPreferencesToDefault'
 
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0702,0B04,1000', outClusters: '0003,0019', manufacturer: 'Candeo', model: 'C-ZB-RD1P-REM', deviceJoinName: 'Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Remote Mode)'
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0702,0B04,1000', outClusters: '0003,0019', manufacturer: 'Candeo', model: 'C-ZB-RD1Pv2-REM', deviceJoinName: 'Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Remote Mode)'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -72,7 +73,6 @@ private @Field final Map PREFLOGGING = ['0': 'Device Event Logging', '1': 'Drive
 void installed() {
     logTrace('installed called', true)
     setPreferencesToDefault()
-    logDebug("modelNumberOfButtons: ${modelNumberOfButtons}")
     sendEvent(processEvent(name: 'numberOfButtons', value: 3, displayed: false))
     for (Integer buttonNumber : 1..3) {
         sendEvent(buttonAction('pushed', buttonNumber, 'digital'))
