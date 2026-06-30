@@ -138,7 +138,7 @@ List<String> updated() {
     logInfo("deviceConfigDefaultOnLevel setting is: ${PREFLEVEL[deviceConfigDefaultOnLevel ?: 'previous']}", true)
     logInfo("deviceConfigDefaultOnTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOnTransitionTime ?: '1000']}", true)
     logInfo("deviceConfigDefaultOffTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOffTransitionTime ?: '1000']}", true)
-    logInfo("deviceConfigDefaultMoveRate setting is: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '1']}", true)
+    logInfo("deviceConfigDefaultMoveRate setting is: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '35']}", true)
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand ?: 'refresh']}", true)
     logInfo("levelTransitionTime setting is: ${PREFLEVELTRANSITIONTIME[levelTransitionTime ?: 'device']}", true)
     logInfo("levelChangeRate setting is: ${PREFLEVELCHANGERATE[levelChangeRate ?: 'device']}", true)
@@ -204,8 +204,8 @@ List<String> configure() {
     logDebug("off transition time is: ${deviceConfigDefaultOffTransitionTime ?: '1000'}")
     Integer offTransitionTime = deviceConfigDefaultOffTransitionTime ? deviceConfigDefaultOffTransitionTime == 'none' ? 65535 : (deviceConfigDefaultOffTransitionTime.toInteger() / 100).toInteger() : 10
     logDebug("offTransitionTime: ${offTransitionTime}")
-    logDebug("default move rate is: ${deviceConfigDefaultMoveRate ?: '1'}")
-    Integer moveRate = deviceConfigDefaultMoveRate ? percentageValueToLevel(deviceConfigDefaultMoveRate) : 3
+    logDebug("default move rate is: ${deviceConfigDefaultMoveRate ?: '35'}")
+    Integer moveRate = deviceConfigDefaultMoveRate ? percentageValueToLevel(deviceConfigDefaultMoveRate) : 89
     logDebug("moveRate: ${moveRate}")
     List<String> cmds = [ //onoff
                          "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0006 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
@@ -483,7 +483,7 @@ List<String> setLevel(BigDecimal level, BigDecimal transition) {
     logDebug("scaledTransition: ${scaledTransition}")
     Integer scaledLevel = percentageValueToLevel(level)
     logDebug("scaledLevel: ${scaledLevel}")
-    List<String> cmds = ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 4 {0x${intTo8bitUnsignedHex(scaledLevel)} 0x${intTo16bitUnsignedHex(scaledTransition)}}"]
+    List<String> cmds = ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 4 {0x${intTo8bitUnsignedHex(scaledLevel)} 0x${intTo16bitUnsignedHex(scaledTransition)} 0x0 0x0}"]
     logDebug("returning ${cmds}")
     state['action'] = 'digitalsetlevel'
     return cmds
@@ -711,7 +711,7 @@ private void processLevelEvent(Map descriptionMap, List<Map> events) {
                 logDebug('level control (0008) default move rate report (0014)')
                 Integer defaultMoveRateValue = zigbee.convertHexToInt(descriptionMap.value)
                 logDebug("defaultMoveRateValue is ${defaultMoveRateValue}")
-                logDebug("deviceConfigDefaultMoveRate is currently set to: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '1']} and device reports it is set to: ${PREFMOVERATE[(levelValueToPercentage(defaultMoveRateValue)).toString()]}")
+                logDebug("deviceConfigDefaultMoveRate is currently set to: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '35']} and device reports it is set to: ${PREFMOVERATE[(levelValueToPercentage(defaultMoveRateValue)).toString()]}")
             }
             else {
                 logDebug('level control (0008) attribute skipped')
