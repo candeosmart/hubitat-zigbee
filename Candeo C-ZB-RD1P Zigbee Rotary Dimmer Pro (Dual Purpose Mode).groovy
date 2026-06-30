@@ -2,7 +2,7 @@
  *    Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Dual Purpose Mode)
  *    Supports on / off / setLevel / startLevelChange / stopLevelChange / flash
  *    Reports switch / level / power / energy / current / voltage events
- *    Reports button 1 pushed & double tapped events for press / double press on knob
+ *    Reports button 1 pushed, double tapped, held and released events for press / double press / hold / release on knob
  *    Reports button 2 pushed events for clockwise step rotation of the knob
  *    Reports button 2 held events for starting clockwise rotation of the knob
  *    Reports button 2 released events for stopping clockwise rotation of the knob
@@ -49,6 +49,7 @@ metadata {
         command 'resetPreferencesToDefault'
 
         fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0702,0B04,1000', outClusters: '0003,0019', manufacturer: 'Candeo', model: 'C-ZB-RD1P-DPM', deviceJoinName: 'Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Dual Purpose Mode)'
+        fingerprint profileId: '0104', endpointId: '01', inClusters: '0000,0003,0004,0005,0006,0008,0702,0B04,1000', outClusters: '0003,0019', manufacturer: 'Candeo', model: 'C-ZB-RD1Pv2-DPM', deviceJoinName: 'Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Dual Purpose Mode)'
     }
     preferences {
         input name: 'deviceDriverOptions', type: 'hidden', title: '<strong>Device Driver Options</strong>', description: '<small>The following options change the behaviour of the device driver, they take effect after hitting "<strong>Save Preferences</strong> below."</small>'
@@ -116,7 +117,6 @@ private @Field final Map PREFLOGGING = ['0': 'Device Event Logging', '1': 'Drive
 void installed() {
     logTrace('installed called', true)
     setPreferencesToDefault()
-    logDebug("modelNumberOfButtons: ${modelNumberOfButtons}")
     sendEvent(processEvent(name: 'numberOfButtons', value: 3, displayed: false))
     for (Integer buttonNumber : 1..3) {
         sendEvent(buttonAction('pushed', buttonNumber, 'digital'))
@@ -154,7 +154,7 @@ List<String> updated() {
     logInfo("deviceConfigDefaultOnLevel setting is: ${PREFLEVEL[deviceConfigDefaultOnLevel ?: 'previous']}", true)
     logInfo("deviceConfigDefaultOnTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOnTransitionTime ?: '1000']}", true)
     logInfo("deviceConfigDefaultOffTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOffTransitionTime ?: '1000']}", true)
-    logInfo("deviceConfigDefaultMoveRate setting is: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '1']}", true)
+    logInfo("deviceConfigDefaultMoveRate setting is: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '35']}", true)
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand ?: 'refresh']}", true)
     logInfo("levelTransitionTime setting is: ${PREFLEVELTRANSITIONTIME[levelTransitionTime ?: 'device']}", true)
     logInfo("levelChangeRate setting is: ${PREFLEVELCHANGERATE[levelChangeRate ?: 'device']}", true)
@@ -220,8 +220,8 @@ List<String> configure() {
     logDebug("off transition time is: ${deviceConfigDefaultOffTransitionTime ?: '1000'}")
     Integer offTransitionTime = deviceConfigDefaultOffTransitionTime ? deviceConfigDefaultOffTransitionTime == 'none' ? 65535 : (deviceConfigDefaultOffTransitionTime.toInteger() / 100).toInteger() : 10
     logDebug("offTransitionTime: ${offTransitionTime}")
-    logDebug("default move rate is: ${deviceConfigDefaultMoveRate ?: '1'}")
-    Integer moveRate = deviceConfigDefaultMoveRate ? percentageValueToLevel(deviceConfigDefaultMoveRate) : 3
+    logDebug("default move rate is: ${deviceConfigDefaultMoveRate ?: '35'}")
+    Integer moveRate = deviceConfigDefaultMoveRate ? percentageValueToLevel(deviceConfigDefaultMoveRate) : 89
     logDebug("moveRate: ${moveRate}")
     List<String> cmds = [ //onoff
                          "zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0006 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}",
@@ -523,7 +523,7 @@ List<String> setLevel(BigDecimal level, BigDecimal transition) {
     logDebug("scaledTransition: ${scaledTransition}")
     Integer scaledLevel = percentageValueToLevel(level)
     logDebug("scaledLevel: ${scaledLevel}")
-    List<String> cmds = ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 4 {0x${intTo8bitUnsignedHex(scaledLevel)} 0x${intTo16bitUnsignedHex(scaledTransition)}}"]
+    List<String> cmds = ["he cmd 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 4 {0x${intTo8bitUnsignedHex(scaledLevel)} 0x${intTo16bitUnsignedHex(scaledTransition)} 0x0 0x0}"]
     logDebug("returning ${cmds}")
     state['action'] = 'digitalsetlevel'
     return cmds
@@ -848,7 +848,7 @@ private void processLevelEvent(Map descriptionMap, List<Map> events) {
                 logDebug('level control (0008) default move rate report (0014)')
                 Integer defaultMoveRateValue = zigbee.convertHexToInt(descriptionMap.value)
                 logDebug("defaultMoveRateValue is ${defaultMoveRateValue}")
-                logDebug("deviceConfigDefaultMoveRate is currently set to: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '1']} and device reports it is set to: ${PREFMOVERATE[(levelValueToPercentage(defaultMoveRateValue)).toString()]}")
+                logDebug("deviceConfigDefaultMoveRate is currently set to: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '35']} and device reports it is set to: ${PREFMOVERATE[(levelValueToPercentage(defaultMoveRateValue)).toString()]}")
             }
             else {
                 logDebug('level control (0008) attribute skipped')
