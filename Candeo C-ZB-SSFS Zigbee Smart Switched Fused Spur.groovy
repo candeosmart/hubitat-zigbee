@@ -14,7 +14,7 @@
  *    Has Setting For Explicit State After Hub Startup
  */
 metadata {
-    definition(name: 'Candeo C-ZB-SSFS Zigbee Smart Switched Fused Spur', namespace: 'Candeo', author: 'Candeo', importUrl: 'TODO', singleThreaded: true) {
+    definition(name: 'Candeo C-ZB-SSFS Zigbee Smart Switched Fused Spur', namespace: 'Candeo', author: 'Candeo', importUrl: 'https://raw.githubusercontent.com/candeosmart/hubitat-zigbee/refs/heads/main/Candeo%20C-ZB-SSFS%20Zigbee%20Smart%20Switched%20Fused%20Spur.groovy', singleThreaded: true) {
         capability 'Switch'
         capability 'Flash'
         capability 'PowerMeter'
