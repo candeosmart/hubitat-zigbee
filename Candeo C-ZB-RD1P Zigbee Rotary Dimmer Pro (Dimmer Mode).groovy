@@ -945,7 +945,7 @@ private Integer levelValueToPercentage(Integer levelValue) {
     logTrace("levelValueToPercentage called levelValue: ${levelValue}")
     Integer validateLevel = levelValue
     if (validateLevel >= DEVICEMAXLEVEL) {
-        logTrace("device reported level greater than its reported maximum ${DEVICEMAXLEVEL}, returning 100")
+        logTrace("device reported level greater than or equal to its reported maximum ${DEVICEMAXLEVEL}, returning 100")
         return 100
     }
     if (validateLevel >= 255) {
