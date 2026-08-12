@@ -325,10 +325,10 @@ private List<Map> processEvents(Map descriptionMap, List<Map> events = []) {
         else if (endpoint == '02' && (descriptionMap.cluster == '0008' || descriptionMap.clusterId == '0008' || descriptionMap.clusterInt == 8)) {
             processLevelCommand(descriptionMap, events)
         }
-        else if (descriptionMap.cluster == '0B04' || descriptionMap.clusterId == '0B04' || descriptionMap.clusterInt == 2820) {
+        else if (endpoint == '01' && (descriptionMap.cluster == '0B04' || descriptionMap.clusterId == '0B04' || descriptionMap.clusterInt == 2820)) {
             processElectricalMeasurementEvent(descriptionMap, events)
         }
-        else if (descriptionMap.cluster == '0702' || descriptionMap.clusterId == '0702' || descriptionMap.clusterInt == 1794) {
+        else if (endpoint == '01' && (descriptionMap.cluster == '0702' || descriptionMap.clusterId == '0702' || descriptionMap.clusterInt == 1794)) {
             processSimpleMeteringEvent(descriptionMap, events)
         }
         else {
