@@ -2,7 +2,7 @@
  *    Candeo C-ZB-RD1P Zigbee Rotary Dimmer Pro (Dimmer Mode)
  *    Supports on / off / setLevel / startLevelChange / stopLevelChange / flash
  *    Reports switch / level / power / energy / current / voltage events
- *    Reports button 1 double tapped, held and released events for double press / hold / release on knob
+ *    Reports button 1 double tapped, held and released events for double press / hold / release on knob (when "Extra Button Commands" is enabled)
  *    Has Setting For Level Transition Time (use device setting, as fast as possible or set an explicit time)
  *    Has Setting For Level Change Rate (use device setting, as fast as possible or set an explicit rate)
  *    Has Setting For Flash Time
@@ -17,6 +17,7 @@
  *    Has Setting For On Transition Time
  *    Has Setting For Off Transition Time
  *    Has Setting For Default Move Rate
+ *    Has Setting For Enabling And Disabling Extra Button Commands
  *    Has Setting For Explicit State After Hub Startup
  */
 
@@ -70,6 +71,7 @@ metadata {
         input name: 'deviceConfigDefaultOnTransitionTime', type: 'enum', title: 'On Transition Time (s) When Turned On', description: '<small>When turned on, use this as the transition time to fade up.</small><br><br>', options: PREFTRANSITIONTIME, defaultValue: '1000' //10ths of a second default 10
         input name: 'deviceConfigDefaultOffTransitionTime', type: 'enum', title: 'Off Transition Time (s) When Turned Off', description: '<small>When turned off, use this as the transition time to fade down.</small><br><br>', options: PREFTRANSITIONTIME, defaultValue: '1000' //10ths of a second default 10
         input name: 'deviceConfigDefaultMoveRate', type: 'enum', title: 'Move Rate Per Second (%)', description: '<small>When changing level, move at this percentage per second.</small><br><br>', options: PREFMOVERATE, defaultValue: '35' //level units per second default 85, approximately 35%
+        input name: 'deviceConfigREMLiteEP2Enable', type: 'bool', title: 'Enable Extra Button Commands', description: '<small>When enabled, extra button commands (double press, hold, release) functionality will be enabled.   Please note: a 0.5s delay is added to knob press actions in order to detect the different types of presses.</small><br><br>', defaultValue: false
         input name: 'platformOptions', type: 'hidden', title: '<strong>Platform Options</strong>', description: '<small>The following options are relevant to the Hubitat platform and UI itself.</small>'
     }
 }
@@ -145,6 +147,7 @@ List<String> updated() {
     logInfo("deviceConfigDefaultOnTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOnTransitionTime ?: '1000']}", true)
     logInfo("deviceConfigDefaultOffTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOffTransitionTime ?: '1000']}", true)
     logInfo("deviceConfigDefaultMoveRate setting is: ${PREFMOVERATE[deviceConfigDefaultMoveRate ?: '35']}", true)
+    logInfo("deviceConfigREMLiteEP2Enable setting is: ${deviceConfigREMLiteEP2Enable == true}", true)
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand ?: 'refresh']}", true)
     logInfo("levelTransitionTime setting is: ${PREFLEVELTRANSITIONTIME[levelTransitionTime ?: 'device']}", true)
     logInfo("levelChangeRate setting is: ${PREFLEVELCHANGERATE[levelChangeRate ?: 'device']}", true)
@@ -252,9 +255,23 @@ List<String> configure() {
                          //startupcurrentlevel
                          "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 {}", "delay ${ZIGBEEDELAY}",
                          "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 ${convertToHexString(DataType.UINT8)} {${convertToHexString(startUpLevel)}} {}", "delay ${ZIGBEEDELAY}",
-                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 {}", "delay ${ZIGBEEDELAY}",
-                         //onoff endpoint 2
+                         "he rattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0008 0x4000 {}", "delay ${ZIGBEEDELAY}"]
+    if (deviceConfigREMLiteEP2Enable) {
+        //enable REM-Lite EP2 functionality
+        logDebug('deviceConfigREMLiteEP2Enable is true, enabling REM-Lite EP2 functionality')
+        cmds += ["he raw 0x${device.deviceNetworkId} 1 0x${device.endpointId} 0x0006 {10 00 00 00 80}", "delay ${ZIGBEEDELAY}",
+                "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 0x8000 ${convertToHexString(DataType.BOOLEAN)} {0x01} {}", "delay ${ZIGBEEDELAY}",
+                "he raw 0x${device.deviceNetworkId} 1 0x${device.endpointId} 0x0006 {10 00 00 00 80}", "delay ${ZIGBEEDELAY}",
                          "zdo bind 0x${device.deviceNetworkId} 0x02 0x01 0x0006 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}"]
+    }
+    else {
+        //disable REM-Lite EP2 functionality
+        logDebug('deviceConfigREMLiteEP2Enable is false, disabling REM-Lite EP2 functionality')
+        cmds += ["he raw 0x${device.deviceNetworkId} 1 0x${device.endpointId} 0x0006 {10 00 00 00 80}", "delay ${ZIGBEEDELAY}",
+                "he wattr 0x${device.deviceNetworkId} 0x${device.endpointId} 0x0006 0x8000 ${convertToHexString(DataType.BOOLEAN)} {0x00} {}", "delay ${ZIGBEEDELAY}",
+                "he raw 0x${device.deviceNetworkId} 1 0x${device.endpointId} 0x0006 {10 00 00 00 80}", "delay ${ZIGBEEDELAY}",
+                "zdo unbind 0x${device.deviceNetworkId} 0x02 0x01 0x0006 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}"]
+    }
     if (deviceConfigPowerReportEnable || deviceConfigVoltageReportEnable || deviceConfigCurrentReportEnable) {
         cmds += ["zdo bind 0x${device.deviceNetworkId} 0x${device.endpointId} 0x01 0x0B04 {${device.zigbeeId}} {}", "delay ${ZIGBEEDELAY}"]
     }
@@ -574,16 +591,16 @@ private List<Map> processEvents(Map descriptionMap, List<Map> events = []) {
         if (endpoint == '02' && (descriptionMap.cluster == '0006' || descriptionMap.clusterId == '0006' || descriptionMap.clusterInt == 6)) {
             processSwitchCommand(descriptionMap, events)
         }
-        else if (descriptionMap.cluster == '0006' || descriptionMap.clusterId == '0006' || descriptionMap.clusterInt == 6) {
+        else if (endpoint == '01' && (descriptionMap.cluster == '0006' || descriptionMap.clusterId == '0006' || descriptionMap.clusterInt == 6)) {
             processSwitchEvent(descriptionMap, events)
         }
-        else if (descriptionMap.cluster == '0008' || descriptionMap.clusterId == '0008' || descriptionMap.clusterInt == 8) {
+        else if (endpoint == '01' && (descriptionMap.cluster == '0008' || descriptionMap.clusterId == '0008' || descriptionMap.clusterInt == 8)) {
             processLevelEvent(descriptionMap, events)
         }
-        else if (descriptionMap.cluster == '0B04' || descriptionMap.clusterId == '0B04' || descriptionMap.clusterInt == 2820) {
+        else if (endpoint == '01' && (descriptionMap.cluster == '0B04' || descriptionMap.clusterId == '0B04' || descriptionMap.clusterInt == 2820)) {
             processElectricalMeasurementEvent(descriptionMap, events)
         }
-        else if (descriptionMap.cluster == '0702' || descriptionMap.clusterId == '0702' || descriptionMap.clusterInt == 1794) {
+        else if (endpoint == '01' && (descriptionMap.cluster == '0702' || descriptionMap.clusterId == '0702' || descriptionMap.clusterInt == 1794)) {
             processSimpleMeteringEvent(descriptionMap, events)
         }
         else {
@@ -667,6 +684,11 @@ private void processSwitchEvent(Map descriptionMap, List<Map> events) {
                 Map<String, String> startUpOnOff = ['00': 'off', '01': 'on', '02': 'opposite', '03': 'previous', 'FF': 'previous']
                 String startupBehaviour = PREFPOWERON[startUpOnOff[startUpOnOffValue]] ?: "${startUpOnOffValue} (unknown}"
                 logDebug("deviceConfigDefaultPowerOnBehaviour is currently set to: ${PREFPOWERON[deviceConfigDefaultPowerOnBehaviour ?: 'previous']} and device reports it is set to: ${startupBehaviour}")
+            }
+            else if (descriptionMap.attrId == '8000' || descriptionMap.attrInt == 32768) {
+                logDebug('on off (0006) remlite ep2 enable report (8000)')
+                Boolean remLiteEP2Value = descriptionMap.value == '01'
+                logDebug("deviceConfigREMLiteEP2Enable is currently set to: ${deviceConfigREMLiteEP2Enable ? 'enabled' : 'disabled'} and device reports it is set to: ${remLiteEP2Value ? 'enabled' : 'disabled'}")
             }
             else {
                 logDebug('on off (0006) attribute skipped')
@@ -1095,6 +1117,8 @@ private void setPreferencesToDefault() {
     logInfo("deviceConfigDefaultOffTransitionTime setting is: ${PREFTRANSITIONTIME[deviceConfigDefaultOffTransitionTime]}")
     device.updateSetting('deviceConfigDefaultMoveRate', [value: '35', type: 'enum'])
     logInfo("deviceConfigDefaultMoveRate setting is: ${PREFMOVERATE[deviceConfigDefaultMoveRate]}")
+    device.updateSetting('deviceConfigREMLiteEP2Enable', PREFFALSE)
+    logInfo('deviceConfigREMLiteEP2Enable setting is: false')
     device.updateSetting('hubStartupDefaultCommand', [value: 'refresh', type: 'enum'])
     logInfo("hubStartupDefaultCommand setting is: ${PREFHUBRESTART[hubStartupDefaultCommand]}")
     device.updateSetting('levelTransitionTime', PREFDEVICE)
